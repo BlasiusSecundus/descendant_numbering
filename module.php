@@ -69,8 +69,8 @@ class DescendantNumberingModule extends AbstractModule implements ModuleTabInter
         {
             case \CustomDescendantNumberParameterType::Boolean:
                  $ctrl_id = bin2hex(random_bytes(8));
-                $retval.="<input type='checkbox' name='".htmlspecialchars($parameter_descriptor->Name)."' id='$ctrl_id'>"
-                        ."<label for='$ctrl_id' title='".htmlspecialchars($parameter_descriptor->Description)."'>".htmlspecialchars($parameter_descriptor->DisplayName)."</label>";
+                $retval.="<input type='checkbox' name=\"".htmlspecialchars($parameter_descriptor->Name)."\" id='$ctrl_id'>"
+                        ."<label for='$ctrl_id' title=\"".htmlspecialchars($parameter_descriptor->Description)."\">".htmlspecialchars($parameter_descriptor->DisplayName)."</label>";
                 break;
             case \CustomDescendantNumberParameterType::SingleChoice:
                 
@@ -80,10 +80,20 @@ class DescendantNumberingModule extends AbstractModule implements ModuleTabInter
                 foreach($parameter_descriptor->Choices as $value=>$display_name)
                 {
                      $ctrl_id = bin2hex(random_bytes(8));
-                    $retval.="<div><input type='radio' name='$parameter_descriptor->Name' id='$ctrl_id' value='$value' ".($is_first?"checked":"")."><label for='$ctrl_id'>$display_name</label></div>";
+                    $retval.="<div><input type='radio' name=\"".htmlspecialchars($parameter_descriptor->Name)."\" id='$ctrl_id' value='$value' ".($is_first?"checked":"")."><label for='$ctrl_id'>$display_name</label></div>";
                     $is_first = false;
                 }
                 $retval.="</fieldset>";
+                break;
+            case \CustomDescendantNumberParameterType::Integer:
+                $ctrl_id = bin2hex(random_bytes(8));
+                $retval.="<label for='$ctrl_id' title=\"".htmlspecialchars($parameter_descriptor->Description)."\">".htmlspecialchars($parameter_descriptor->DisplayName)."</label>";
+                $retval.="<input name='".htmlspecialchars($parameter_descriptor->Name)."' id='$ctrl_id' type='number' ";
+                if(isset($parameter_descriptor->Choices["min"]))
+                    $retval.=" min='".intval($parameter_descriptor->Choices["min"])."' ";
+                if(isset($parameter_descriptor->Choices["max"]))
+                    $retval.=" max='".intval($parameter_descriptor->Choices["max"])."' ";
+                $retval.="/>";
                 break;
         }
         

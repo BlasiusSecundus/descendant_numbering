@@ -3,10 +3,23 @@
 
 use Fisharebest\Webtrees\I18N;
 
+/**
+ * Enumeration of d'Aboville custom parameter names.
+ */
 final class dAbovilleParameters
 {
+    /**
+     * Include spouses as separate entries.
+     */
     const IncludeSpouses="includeSpouses";
+    /**
+     * Sets how to number 10th+ children.
+     */
     const ChildrenNumberAfter10 = "childrenNumberAfter10";
+    /**
+     * Sets separator dot frequency. A separator dot is added after each N numbers.
+     */
+    const DotForEachNNumbers = "DotForEachNNumbers";
 }
 
 /**
@@ -81,7 +94,14 @@ class dAboville implements IDescendantNumberProvider
                     CustomDescendantNumberParameterType::SingleChoice,
                     I18N::translate("Sets how 10+ children are numbered."),
                     ["10"=>"Numbers (... 8, 9, 10, 11, ...)","A"=>"Capital letters (... 8, 9, A, B, ...)"]
-                    )
+                    ),
+            new CustomDescendantNumberParameterDescriptor(
+                    dAbovilleParameters::DotForEachNNumbers,
+                    I18N::translate("Place a period after each Nth number:"),
+                    CustomDescendantNumberParameterType::Integer,
+                    I18N::translate("Sets how frequenly a separator period is placed. It is advisable to set \"Child numbering after 9\" to \"Capital letters\", if this value is greater than 2 and there are persons with more than 9 children."),
+                    ["min"=>1]
+                    ) 
         ];
     }
     
@@ -121,6 +141,16 @@ class dAboville implements IDescendantNumberProvider
             $local_child_no = chr(ord('A')-10+$params->NthChild);
         }
         
-        return  ( $params->ParentNumber ? "$params->ParentNumber." : "" ).$local_child_no;
+        $retval = $params->ParentNumber ? "$params->ParentNumber" : "";
+        
+        $dot_frequency = intval($this->getCustomParameter(dAbovilleParameters::DotForEachNNumbers));
+        $dot_frequency = max(1,$dot_frequency);
+        
+        if($params->Level % $dot_frequency == 0)
+            $retval.=".";
+        
+        $retval.=$local_child_no;
+        
+        return $retval;
     }
 }

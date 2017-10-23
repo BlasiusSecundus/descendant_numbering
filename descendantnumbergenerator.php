@@ -17,6 +17,12 @@ class DescendantNumberGenerator
     protected $Ancestor = null;
     
     /**
+     *
+     * @var integer The current level. Level 1 = the ancestor, 2 = their children, 3 = grandchildren and so on. 
+     */
+    protected $CurrentLevel = 1;
+    
+    /**
      * @var IDescendantNumberProvider The descendant number provider.
      */
     protected $NumberProvider = null;
@@ -32,9 +38,10 @@ class DescendantNumberGenerator
      * @param Individual $ancestor The ancestor.
      * @param IDescendantNumberProvider $numbering_class The numbering style.
      * @param Individual[] $numbering The array of numbered individuals. Used internally for recursion. Must be an empty array when initially called with the ancestor.
+     * @param integer level The current level of recursion (i. e. the depth of the descendant tree). 1 = the children of the root ancestor, 2 = grandchildren and so on. Used internally.
      * @return string[]
      */
-    protected static function getDescendantNumberingFor($ancestor, $numbering_class, &$numbering = array())
+    protected static function getDescendantNumberingFor($ancestor, $numbering_class, &$numbering = array(), $level = 1)
     {
       
         $children = [];
@@ -109,6 +116,7 @@ class DescendantNumberGenerator
                 $params->NthMarr = $f+1;
                 $params->NumTotalMarr = count($spouse_families);
                 $params->ParentNumber = $numbering[$ancestor->getXref()];
+                $params->Level = $level;
                 
                 if(!$children[$i])
                 {
@@ -119,13 +127,13 @@ class DescendantNumberGenerator
                     $numbering[$children[$i]->getXref()] = $numbering_class->getDescendantNumber($params);
                 }
                 
-                self::getDescendantNumberingFor($children[$i], $numbering_class,$numbering);
+                self::getDescendantNumberingFor($children[$i], $numbering_class,$numbering,$level+1);
             }
             
             $cumulative_child_idx+=count($children);
         
         }
-        
+          
         return $numbering;
     }
     
@@ -184,6 +192,7 @@ class DescendantNumberGenerator
             $this->Ancestor = Individual::getInstance ($ancestor, $WT_TREE);
         }
         
+        $this->CurrentLevel = 1;
         $this->DescendantNumbering = [];
     }
     

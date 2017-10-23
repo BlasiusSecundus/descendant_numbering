@@ -29,6 +29,12 @@ class DescendantNumberParameters
      * @var string The descendant numbering string of the parent of the current descendant. Use NULL for the first level of descendant.
      */
     var $ParentNumber = null;
+    
+    /**
+     *
+     * @var integer The "level" of the current child. This is a 1-based index. 1 = the children of the root ancestor, 2 = grandchildren and so on.
+     */
+    var $Level = 0;
 }
 
 /**
@@ -114,7 +120,7 @@ class CustomDescendantNumberParameterDescriptor
     
     /**
      *
-     * @var string[] The array of possible choices. Only used by Dropdown, SingleChoice, MultiChoice parameters. 
+     * @var string[] The array of possible choices. Only used by Dropdown, SingleChoice, MultiChoice parameters. For integer type, "min" and "max" can be defined.
      */
     var $Choices = array();
 }

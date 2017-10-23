@@ -16,6 +16,9 @@ function CollectCustomNumberingParameters(numbering_style_name)
             if(jq_obj.is(":checked"))
                 param_value = jq_obj.val();
         }
+        else
+            param_value = jq_obj.val();
+        
         if(param_value !== null)
             params[jq_obj.attr("name")] = param_value;
 
