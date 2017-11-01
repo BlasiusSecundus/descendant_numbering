@@ -69,31 +69,33 @@ class DescendantNumberingModule extends AbstractModule implements ModuleTabInter
         {
             case \CustomDescendantNumberParameterType::Boolean:
                  $ctrl_id = bin2hex(random_bytes(8));
-                $retval.="<input type='checkbox' name=\"".htmlspecialchars($parameter_descriptor->Name)."\" id='$ctrl_id'>"
-                        ."<label for='$ctrl_id' title=\"".htmlspecialchars($parameter_descriptor->Description)."\">".htmlspecialchars($parameter_descriptor->DisplayName)."</label>";
+                $retval.="<td class=\"facts_label\"><label for='$ctrl_id' title=\"".htmlspecialchars($parameter_descriptor->Description)."\">".htmlspecialchars($parameter_descriptor->DisplayName)."</label></td>"
+                        ."<td class=\"facts_value\"><input type='checkbox' name=\"".htmlspecialchars($parameter_descriptor->Name)."\" id='$ctrl_id'></td>";
                 break;
             case \CustomDescendantNumberParameterType::SingleChoice:
                 
-                $retval.="<fieldset>"
-                    ."<legend>$parameter_descriptor->DisplayName</legend>";
+                $retval.="<td class=\"facts_label\">".htmlspecialchars($parameter_descriptor->DisplayName)."</td>";
+                $retval.="<td class=\"facts_value\">";
                 $is_first = true;
                 foreach($parameter_descriptor->Choices as $value=>$display_name)
                 {
                      $ctrl_id = bin2hex(random_bytes(8));
-                    $retval.="<div><input type='radio' name=\"".htmlspecialchars($parameter_descriptor->Name)."\" id='$ctrl_id' value='$value' ".($is_first?"checked":"")."><label for='$ctrl_id'>$display_name</label></div>";
+                    $retval.="<br><input type='radio' name=\"".htmlspecialchars($parameter_descriptor->Name)."\" id='$ctrl_id' value='$value' ".($is_first?"checked":"")."><label for='$ctrl_id'>$display_name</label>";
                     $is_first = false;
                 }
-                $retval.="</fieldset>";
+                $retval.="</td>";
                 break;
             case \CustomDescendantNumberParameterType::Integer:
                 $ctrl_id = bin2hex(random_bytes(8));
-                $retval.="<label for='$ctrl_id' title=\"".htmlspecialchars($parameter_descriptor->Description)."\">".htmlspecialchars($parameter_descriptor->DisplayName)."</label>";
+                $retval.="<td class=\"facts_label\"><label for='$ctrl_id' title=\"".htmlspecialchars($parameter_descriptor->Description)."\">".htmlspecialchars($parameter_descriptor->DisplayName)."</label></td>";
+                $retval.="<td class=\"facts_value\">";
                 $retval.="<input name='".htmlspecialchars($parameter_descriptor->Name)."' id='$ctrl_id' type='number' ";
                 if(isset($parameter_descriptor->Choices["min"]))
                     $retval.=" min='".intval($parameter_descriptor->Choices["min"])."' ";
                 if(isset($parameter_descriptor->Choices["max"]))
                     $retval.=" max='".intval($parameter_descriptor->Choices["max"])."' ";
                 $retval.="/>";
+                $retval.="</td>";
                 break;
         }
         
@@ -149,29 +151,37 @@ class DescendantNumberingModule extends AbstractModule implements ModuleTabInter
         $fact_names = $this->getNumberingFactNames();
         $numbering_classes = \DescendantNumberProviderManager::getDescendantNumberingClasses();
         
-        $retval = "Select a numbering style:"
+        $retval = "<table class=\"facts_table\">"
+                . "<tr><td class=\"descriptionbox\">"
+                . "Select a numbering style:"
                 . "<input type='hidden' id='numbering-ancestor' value='{$ancestor->getXref()}'>" 
                 . "<select id='numbering-styles'>";
+                
         foreach($numbering_classes as $numclass)
         {
             $retval.="<option value='".get_class($numclass)."'>{$numclass->getName()}</option>";
         }
-        $retval .=  "</select>";
+        
+        $retval.= "</select>"
+                 . "<button id='preview-numbering'>Preview</button>"
+                . "</td></tr>"
+                . "</table>";
+        
         foreach($numbering_classes as $numclass)
         {
             if(!$numclass->getCustomParameterDescriptors()) {continue;}
             
-            $retval.="<fieldset id=\"". get_class($numclass)."-parameters\" data-numbering=\"".get_class($numclass)."\" class=\"custom-descendant-numbering-parameters\">"
-                    ."<legend>{$numclass->getName()} parameters</legend>";
+            $retval .= "<table id=\"". get_class($numclass)."-parameters\" data-numbering=\"".get_class($numclass)."\" class=\"facts_table custom-descendant-numbering-parameters\">";
+            
             foreach($numclass->getCustomParameterDescriptors() as $paramdesc)
             {
+                $retval.="<tr>";
                 $retval.=$this->getCustomParameterControls($paramdesc);
+                $retval.="</tr>";
             }
             $retval.="</fieldset>";
         }
-        $retval.= "<button id='preview-numbering'>Preview</button><hr>"
-                
-                . "<table class='facts_table' style='width: 100%' id='numbering-preview'>"
+        $retval.= "<table class='facts_table' style='width: 100%' id='numbering-preview'>"
                 
                 . "<caption class='subheaders'>Descendant numbering - <span id='numbering-preview-numbering-style'></span></caption>"
                 

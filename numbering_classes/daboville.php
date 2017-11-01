@@ -20,6 +20,11 @@ final class dAbovilleParameters
      * Sets separator dot frequency. A separator dot is added after each N numbers.
      */
     const DotForEachNNumbers = "DotForEachNNumbers";
+    
+    /**
+     * If true, a period after the first number will always be placed.
+     */
+    const DotAfterFirstNumber = "DotAfterFirstNumber";
 }
 
 /**
@@ -96,6 +101,12 @@ class dAboville implements IDescendantNumberProvider
                     ["10"=>"Numbers (... 8, 9, 10, 11, ...)","A"=>"Capital letters (... 8, 9, A, B, ...)"]
                     ),
             new CustomDescendantNumberParameterDescriptor(
+                    dAbovilleParameters::DotAfterFirstNumber,
+                    I18N::translate("Place a period after first number:"),
+                    CustomDescendantNumberParameterType::Boolean,
+                    I18N::translate("Always places a separator period after the first number.")
+                    ),
+            new CustomDescendantNumberParameterDescriptor(
                     dAbovilleParameters::DotForEachNNumbers,
                     I18N::translate("Place a period after each Nth number:"),
                     CustomDescendantNumberParameterType::Integer,
@@ -146,7 +157,23 @@ class dAboville implements IDescendantNumberProvider
         $dot_frequency = intval($this->getCustomParameter(dAbovilleParameters::DotForEachNNumbers));
         $dot_frequency = max(1,$dot_frequency);
         
-        if($params->Level % $dot_frequency == 0)
+        $dot_after_first = intval($this->getCustomParameter(dAbovilleParameters::DotAfterFirstNumber));
+        
+        $place_dot = false;
+        
+        //always place dot after first number
+        if ($dot_after_first)  {
+            if ($params->Level == 1)
+                $place_dot = true;
+            //in this case, the interval is counted from the second number
+            else if( ($params->Level - 1) % $dot_frequency == 0)
+                $place_dot = true;
+        }
+        //only place the dot at the specified interval
+        else if($params->Level % $dot_frequency == 0)
+            $place_dot = true;
+        
+        if($place_dot)
             $retval.=".";
         
         $retval.=$local_child_no;
