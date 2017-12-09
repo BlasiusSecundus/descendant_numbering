@@ -31,7 +31,7 @@ function RestoreCustomNumberingParamsFromLocalStorage(numbering_style_name)
 {
     
     var params_str = localStorage[numbering_style_name+"-parameters"];
-    var params = JSON.parse(params_str);
+    var params = params_str ? JSON.parse(params_str) : null;
     
     if(params)for(var param_name in params){
         
@@ -65,13 +65,31 @@ function SaveCustomNumberingParameters(numbering_style_name)
     
 }
 
-function OnPreviewClick()
+function CollectPostData()
 {
-    var post_data = {
+     var post_data = {
         "style" : jQuery("#numbering-styles").val(),
         "ancestor" : jQuery("#numbering-ancestor").val(),
         "parameters" : CollectCustomNumberingParameters(jQuery("#numbering-styles").val())
     };
+    
+    return post_data;
+}
+function OnDownloadClick(event)
+{
+
+    var post_data = CollectPostData();
+    
+    post_data["download"] = true;
+    post_data["dl-format"] = jQuery(event.target).data("dl-format");
+    
+    window.location = "modules_v3/descendant_numbering/getdescendantnumbering.php?"+jQuery.param(post_data);
+    
+}
+
+function OnPreviewClick()
+{
+    var post_data = CollectPostData();
     
     jQuery.post("modules_v3/descendant_numbering/getdescendantnumbering.php",post_data,function(data){
         if("error" in data)
@@ -138,7 +156,8 @@ function OnNumberingClassSelected(event)
     jQuery("#"+localStorage.descendantNumberingClass+"-parameters").show();
     
 }
-   
+
+jQuery(".desc-num-download").click(OnDownloadClick);
 jQuery("#preview-numbering").click(OnPreviewClick);
 
 if(localStorage.descendantNumberingClass)

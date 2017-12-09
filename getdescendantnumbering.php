@@ -47,7 +47,17 @@ if(!$ancestor_xref) {
 DescendantNumberProviderManager::setNumberingClassDirectory("numbering_classes");
 
 $number_generator = new DescendantNumberGenerator($ancestor_xref,$numberingstyle,$params);    
-//var_dump($number_generator);
+
+$download = Filter::post("download");
+if($download == NULL)
+    $download = Filter::get("download");
+
+if($download)
+{
+    
+    header("Content-Disposition: attachment; filename='$ancestor_xref-$numberingstyle.json'");
+}
+
 echo json_encode( [
     "numberingClass" =>[
         "id" => $numberingstyle,
