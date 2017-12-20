@@ -100,7 +100,7 @@ if($download)
             throw new Exception("Invalid download format: $dl_format");
     }
     
-    header("Content-Disposition: attachment; filename='$ancestor_xref-$numberingstyle.$dl_format'");
+    header("Content-Disposition: attachment; filename=\"$ancestor_xref-$numberingstyle.$dl_format\"");
 }
 //ajax output
 else {
