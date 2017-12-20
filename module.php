@@ -165,6 +165,7 @@ class DescendantNumberingModule extends AbstractModule implements ModuleTabInter
         $retval.= "</select>"
                  . "<button id='preview-numbering'>Preview</button> - Download: "
                  . "<button class='desc-num-download' id='download-json' data-dl-format='JSON'>JSON</button> "
+                 . "<button class='desc-num-download' id='download-csv' data-dl-format='CSV'>CSV</button> "
                 . "</td></tr>"
                 . "</table>";
         

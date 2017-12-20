@@ -12,7 +12,38 @@ require '../../includes/session.php';
 
 require_once 'descendantnumbergenerator.php';
 
-header('Content-Type: text/json; charset=UTF-8');
+function echo_json($numberingstyle, $number_generator)
+{
+    header('Content-Type: text/json; charset=UTF-8');
+    echo json_encode( [
+    "numberingClass" =>[
+        "id" => $numberingstyle,
+        "name" => $number_generator->getNumberProvider()->getName()
+    ],
+    "numbering"=>$number_generator->getDescendantNumbering()
+        ]);
+}
+
+function echo_csv($numberingstyle, $number_generator)
+{
+    header('Content-Type: text/csv; charset=UTF-8');
+    $out = fopen('php://output', 'w');
+    foreach($number_generator->getDescendantNumbering() as $indi=>$number){
+        fputcsv($out, array($indi, $number));
+    }
+    fclose($out);
+}
+
+function get_post($variable){
+    $value = Filter::get($variable);
+    
+    if(!$value)
+    {
+        $value = Filter::post($variable);
+    }
+    
+    return $value;
+}
 /**
  * Defined in session.php
  *
@@ -20,13 +51,12 @@ header('Content-Type: text/json; charset=UTF-8');
  */
 global $WT_TREE;
 $tree_id = $WT_TREE->getTreeId();
-$ancestor_xref = Filter::post("ancestor");
-if($ancestor_xref == NULL) {$ancestor_xref = Filter::get("ancestor");}
+$ancestor_xref = get_post("ancestor");
 
-$numberingstyle = Filter::post("style");
-if($numberingstyle == NULL) {$numberingstyle = Filter::get("style");}
+$numberingstyle = get_post("style");
 
-$params = Filter::post("parameters");
+
+$params = get_post("parameters");
 
 $member = Auth::isMember($WT_TREE);
 
@@ -48,23 +78,34 @@ DescendantNumberProviderManager::setNumberingClassDirectory("numbering_classes")
 
 $number_generator = new DescendantNumberGenerator($ancestor_xref,$numberingstyle,$params);    
 
-$download = Filter::post("download");
-if($download == NULL)
-    $download = Filter::get("download");
+$download = get_post("download");
+
+$dl_format = get_post("dl-format");
+
+if ($dl_format) {
+    $dl_format = strtolower ($dl_format);
+}
 
 if($download)
 {
-    
-    header("Content-Disposition: attachment; filename='$ancestor_xref-$numberingstyle.json'");
-}
 
-echo json_encode( [
-    "numberingClass" =>[
-        "id" => $numberingstyle,
-        "name" => $number_generator->getNumberProvider()->getName()
-    ],
-    "numbering"=>$number_generator->getDescendantNumbering()
-        ]);
+    switch($dl_format){
+        case "json":
+            echo_json($numberingstyle, $number_generator);
+            break;
+        case "csv":
+            echo_csv($numberingstyle, $number_generator);
+            break;
+        default:
+            throw new Exception("Invalid download format: $dl_format");
+    }
+    
+    header("Content-Disposition: attachment; filename='$ancestor_xref-$numberingstyle.$dl_format'");
+}
+//ajax output
+else {
+    echo_json($numberingstyle, $number_generator);
+}
 }
 catch(Exception $ex)
 {
