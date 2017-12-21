@@ -112,7 +112,7 @@ function OnPreviewClick()
                             "<tr>"
                             +"<td class='facts_value'>"+"<a href='individual.php?pid="+null_spouse_data[2]+"&amp;ged="+null_spouse_data[4]+"' target='_blank'><i class='icon-indis'></i>"+null_spouse_data[2]+"</a>"+"</td>"
                             +"<td class='facts_value'>"+"<a href='family.php?famid="+null_spouse_data[3]+"&amp;ged="+null_spouse_data[5]+"' target='_blank'><i class='icon-sfamily'></i>"+null_spouse_data[3]+"</a>"+"</td>"
-                            +"<td class='facts_value'>"+data["numbering"][indi]+"</td>"
+                            +"<td class='facts_value'>"+data["numbering"][indi]["number"]+"</td>"
                             +"</tr>");
                     
                     show_null_spouse_data = true;
@@ -120,9 +120,9 @@ function OnPreviewClick()
                     continue;
                 }
                 tbody.append("<tr><td class='facts_value'>"
-                        +"<a href='individual.php?pid="+indi+"' target='_blank'><i class='icon-indis'></i>"+indi+"</a>"
+                        +"<a href='individual.php?pid="+indi+"' target='_blank'><i class='icon-indis'></i>"+data["numbering"][indi]["name"]+" ("+indi+")</a>"
                         +"</td><td class='facts_value'>"
-                        +data["numbering"][indi]
+                        +data["numbering"][indi]["number"]
                         +"</td></tr>");
             }
             

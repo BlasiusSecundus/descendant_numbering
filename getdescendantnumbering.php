@@ -28,8 +28,8 @@ function echo_csv($numberingstyle, $number_generator)
 {
     header('Content-Type: text/csv; charset=UTF-8');
     $out = fopen('php://output', 'w');
-    foreach($number_generator->getDescendantNumbering() as $indi=>$number){
-        fputcsv($out, array($indi, $number));
+    foreach($number_generator->getDescendantNumbering() as $xref=>$data){
+        fputcsv($out, array($xref, $data["name"], $data["number"]));
     }
     fclose($out);
 }

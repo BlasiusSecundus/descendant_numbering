@@ -34,6 +34,17 @@ class DescendantNumberGenerator
     protected $DescendantNumbering = [];
     
     /**
+     * 
+     * @param array $numbering
+     * @param Individual $indi
+     * @param string $number
+     */
+    protected static function storeNumber(&$numbering, $indi, $number)
+    {
+        $numbering[$indi->getXref()] = array("name"=>$indi ? $indi->getAllNames()[$indi->getPrimaryName()]["fullNN"]: NULL, "number"=>$number);
+    }
+    
+    /**
      * Generates descendant numbering for the specified ancestor.
      * @param Individual $ancestor The ancestor.
      * @param IDescendantNumberProvider $numbering_class The numbering style.
@@ -54,14 +65,14 @@ class DescendantNumberGenerator
         
         if(!$numbering)//if the numbering array is empty, the current $ancestor is the "root"
         {
-            $numbering[$ancestor->getXref()] = $numbering_class->getDescendantNumber(NULL);
+            self::storeNumber($numbering, $ancestor, $numbering_class->getDescendantNumber(NULL));
         }
         
         //spouse numbering - if applicable
         for($f = 0; $f <count($spouse_families); $f++)
         {
             //get spouse number
-            $spouse_number = $numbering_class->getSpouseNumber($numbering[$ancestor->getXref()], $f+1);
+            $spouse_number = $numbering_class->getSpouseNumber($numbering[$ancestor->getXref()]["number"], $f+1);
             
             if($spouse_number === NULL) {continue;}//do not add if numbering not provided
             
@@ -88,11 +99,11 @@ class DescendantNumberGenerator
             //add spouse number
             if($spouse === NULL){
 
-                $numbering["SPOUSE-NULL-{$ancestor->getXref()}-{$fam->getXref()}-{$ancestor->getTree()->getName()}-{$fam->getTree()->getName()}"] = $spouse_number;
+                $numbering["SPOUSE-NULL-{$ancestor->getXref()}-{$fam->getXref()}-{$ancestor->getTree()->getName()}-{$fam->getTree()->getName()}"] = array("number"=>$spouse_number, "name"=>NULL);
                 //throw new Exception("Failed to retrieve the spouse of {$ancestor} (family: $fam).");
             }
             else{
-                $numbering [$spouse->getXref() ] = $spouse_number; 
+                self::storeNumber($numbering, $spouse, $spouse_number);
             }
             
         }
@@ -115,16 +126,16 @@ class DescendantNumberGenerator
                 $params->NthChild = $cumulative_child_idx+$i+1;
                 $params->NthMarr = $f+1;
                 $params->NumTotalMarr = count($spouse_families);
-                $params->ParentNumber = $numbering[$ancestor->getXref()];
+                $params->ParentNumber = $numbering[$ancestor->getXref()]["number"];
                 $params->Level = $level;
                 
                 if(!$children[$i])
                 {
-                    $numbering["child-$i-of-$ancestor"] = $numbering_class->getDescendantNumber($params);
+                    $numbering["child-$i-of-$ancestor"] = array("number"=>$numbering_class->getDescendantNumber($params), "name"=>NULL);
                     continue;
                 }
                 else {
-                    $numbering[$children[$i]->getXref()] = $numbering_class->getDescendantNumber($params);
+                    self::storeNumber($numbering, $children[$i], $numbering_class->getDescendantNumber($params));
                 }
                 
                 self::getDescendantNumberingFor($children[$i], $numbering_class,$numbering,$level+1);
