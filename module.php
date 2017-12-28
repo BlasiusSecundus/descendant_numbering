@@ -190,6 +190,7 @@ class DescendantNumberingModule extends AbstractModule implements ModuleTabInter
                 . "<thead> "
                 . "<tr> "
                 . "<td class='facts_label'>XREF</td> "
+                . "<td class='facts_label'>Name</td>"
                 . "<td class='facts_label'>Number</td> "
                 . "</tr> "
                 . "</thead>"
