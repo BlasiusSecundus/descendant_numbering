@@ -12,7 +12,7 @@ require '../../includes/session.php';
 
 require_once 'descendantnumbergenerator.php';
 
-function echo_json($numberingstyle, $number_generator)
+function echo_json($numberingstyle, $number_generator, $json_options=0)
 {
     header('Content-Type: text/json; charset=UTF-8');
     echo json_encode( [
@@ -21,13 +21,17 @@ function echo_json($numberingstyle, $number_generator)
         "name" => $number_generator->getNumberProvider()->getName()
     ],
     "numbering"=>$number_generator->getDescendantNumbering()
-        ]);
+        ], $json_options);
 }
 
-function echo_csv($numberingstyle, $number_generator)
+function echo_csv($numberingstyle, $number_generator, $include_header)
 {
     header('Content-Type: text/csv; charset=UTF-8');
     $out = fopen('php://output', 'w');
+    if($include_header)
+    {
+        fputcsv($out, array("XREF","Name","Number"));
+    }
     foreach($number_generator->getDescendantNumbering() as $xref=>$data){
         fputcsv($out, array($xref, $data["name"], $data["number"]));
     }
@@ -91,10 +95,10 @@ if($download)
 
     switch($dl_format){
         case "json":
-            echo_json($numberingstyle, $number_generator);
+            echo_json($numberingstyle, $number_generator, get_post("json-pretty-print") ? JSON_PRETTY_PRINT : 0);
             break;
         case "csv":
-            echo_csv($numberingstyle, $number_generator);
+            echo_csv($numberingstyle, $number_generator, get_post("csv-header-row"));
             break;
         default:
             throw new Exception("Invalid download format: $dl_format");

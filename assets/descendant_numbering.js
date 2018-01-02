@@ -1,9 +1,9 @@
 
-function CollectCustomNumberingParameters(numbering_style_name)
+function CollectParameters(container_selector)
 {
     var params = {};
     
-    jQuery.each(jQuery("#"+numbering_style_name+"-parameters").find("input,select,textarea"),function(idx,obj){
+    jQuery.each(jQuery(container_selector).find("input,select,textarea"),function(idx,obj){
         var param_value = null;
         var jq_obj = jQuery(obj);
         
@@ -27,10 +27,14 @@ function CollectCustomNumberingParameters(numbering_style_name)
     return params;
 }
 
-function RestoreCustomNumberingParamsFromLocalStorage(numbering_style_name)
+function CollectCustomNumberingParameters(numbering_style_name)
 {
-    
-    var params_str = localStorage[numbering_style_name+"-parameters"];
+    return CollectParameters("#"+numbering_style_name+"-parameters");
+}
+
+function RestoreParamsFromLocalStorage(var_name, container_selector)
+{
+    var params_str = localStorage[var_name];
     var params = params_str ? JSON.parse(params_str) : null;
     
     if(params)for(var param_name in params){
@@ -40,7 +44,7 @@ function RestoreCustomNumberingParamsFromLocalStorage(numbering_style_name)
         if(!param_value)
             continue;
 
-        var control = jQuery("#"+numbering_style_name+"-parameters [name='"+param_name+"']");
+        var control = jQuery(container_selector+" [name='"+param_name+"']");
         
         if(control.is("input[type='checkbox']"))
             control.prop("checked",param_value);
@@ -50,6 +54,16 @@ function RestoreCustomNumberingParamsFromLocalStorage(numbering_style_name)
     }
 }
 
+function RestoreCommonParams()
+{
+    RestoreParamsFromLocalStorage("descendant-numbering-parameters", "#common-numbering-parameters");
+}
+
+function RestoreCustomNumberingParamsFromLocalStorage(numbering_style_name)
+{
+    RestoreParamsFromLocalStorage(numbering_style_name+"-parameters", "#"+numbering_style_name+"-parameters");
+}
+
 function RestoreAllCustomNumberingParamsFromLocalStorage()
 {
     jQuery.each(jQuery(".custom-descendant-numbering-parameters"),function(){
@@ -57,6 +71,11 @@ function RestoreAllCustomNumberingParamsFromLocalStorage()
     });
 }
 
+function SaveCommonParams()
+{
+    var common_params = CollectParameters("#common-numbering-parameters");
+    localStorage["descendant-numbering-parameters"] = JSON.stringify(common_params);
+}
 
 function SaveCustomNumberingParameters(numbering_style_name)
 {
@@ -67,11 +86,8 @@ function SaveCustomNumberingParameters(numbering_style_name)
 
 function CollectPostData()
 {
-     var post_data = {
-        "style" : jQuery("#numbering-styles").val(),
-        "ancestor" : jQuery("#numbering-ancestor").val(),
-        "parameters" : CollectCustomNumberingParameters(jQuery("#numbering-styles").val())
-    };
+    var post_data = CollectParameters("#common-numbering-parameters");
+    post_data["parameters"] = CollectCustomNumberingParameters(jQuery("#numbering-styles").val());
     
     return post_data;
 }
@@ -147,6 +163,7 @@ function OnNumberingParameterChanged(event)
     var numbering_class = parent_fieldset.data("numbering");
     
     SaveCustomNumberingParameters(numbering_class);
+    SaveCommonParams();
 }
 
 function OnNumberingClassSelected(event)
@@ -170,9 +187,10 @@ jQuery("#numbering-preview, .custom-descendant-numbering-parameters, #null-spous
 
 jQuery("#numbering-styles").trigger("change");
 
-jQuery(".custom-descendant-numbering-parameters").find("input,select,textarea").change(OnNumberingParameterChanged);
+jQuery(".custom-descendant-numbering-parameters, #common-numbering-parameters").find("input,select,textarea").change(OnNumberingParameterChanged);
 
 RestoreAllCustomNumberingParamsFromLocalStorage();
+RestoreCommonParams();
 
 
 

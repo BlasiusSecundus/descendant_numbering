@@ -151,11 +151,11 @@ class DescendantNumberingModule extends AbstractModule implements ModuleTabInter
         $fact_names = $this->getNumberingFactNames();
         $numbering_classes = \DescendantNumberProviderManager::getDescendantNumberingClasses();
         
-        $retval = "<table class=\"facts_table\">"
-                . "<tr><td class=\"descriptionbox\">"
+        $retval = "<table class=\"facts_table\" id='common-numbering-parameters'>"
+                . "<tr><td class=\"descriptionbox\" colspan='2'>"
                 . "Select a numbering style:"
-                . "<input type='hidden' id='numbering-ancestor' value='{$ancestor->getXref()}'>" 
-                . "<select id='numbering-styles'>";
+                . "<input type='hidden' id='numbering-ancestor' name='ancestor' value='{$ancestor->getXref()}'>" 
+                . "<select id='numbering-styles' name='style'>";
                 
         foreach($numbering_classes as $numclass)
         {
@@ -167,13 +167,18 @@ class DescendantNumberingModule extends AbstractModule implements ModuleTabInter
                  . "<button class='desc-num-download' id='download-json' data-dl-format='JSON'>JSON</button> "
                  . "<button class='desc-num-download' id='download-csv' data-dl-format='CSV'>CSV</button> "
                 . "</td></tr>"
+                . "<tr><td colspan='2' class='descriptionbox'>CSV Export Settings</td></tr>"
+                . "<tr><td class='facts_label'>Include header row</td><td class='facts_value'><input type='checkbox' name='csv-header-row'></td></tr>"
+                . "<tr><td colspan='2' class='descriptionbox'>JSON Export Settings</td></tr>"
+                . "<tr><td class='facts_label'>Pretty print</td><td class='facts_value'><input type='checkbox' name='json-pretty-print'></td></tr>"
                 . "</table>";
         
         foreach($numbering_classes as $numclass)
         {
             if(!$numclass->getCustomParameterDescriptors()) {continue;}
             
-            $retval .= "<table id=\"". get_class($numclass)."-parameters\" data-numbering=\"".get_class($numclass)."\" class=\"facts_table custom-descendant-numbering-parameters\">";
+            $retval .= "<table id=\"". get_class($numclass)."-parameters\" data-numbering=\"".get_class($numclass)."\" class=\"facts_table custom-descendant-numbering-parameters\">"
+                    ."<tr><td class='descriptionbox' colspan='2'>{$numclass->getName()} Settings</td></tr>";
             
             foreach($numclass->getCustomParameterDescriptors() as $paramdesc)
             {
