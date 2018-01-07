@@ -113,6 +113,7 @@ else {
 }
 catch(Exception $ex)
 {
+    header('Content-Type: text/json; charset=UTF-8');
     echo json_encode([
         "error"=>[
             "message" => $ex->getMessage()

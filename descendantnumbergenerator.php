@@ -41,7 +41,9 @@ class DescendantNumberGenerator
      */
     protected static function storeNumber(&$numbering, $indi, $number)
     {
-        $numbering[$indi->getXref()] = array("name"=>$indi ? $indi->getAllNames()[$indi->getPrimaryName()]["fullNN"]: NULL, "number"=>$number);
+        if($indi->canShow()){
+            $numbering[$indi->getXref()] = array("name"=>$indi ? $indi->getAllNames()[$indi->getPrimaryName()]["fullNN"]: NULL, "number"=>$number);
+        }
     }
     
     /**
@@ -71,6 +73,8 @@ class DescendantNumberGenerator
         //spouse numbering - if applicable
         for($f = 0; $f <count($spouse_families); $f++)
         {
+            if(!array_key_exists($ancestor->getXref(), $numbering))
+                    continue; 
             //get spouse number
             $spouse_number = $numbering_class->getSpouseNumber($numbering[$ancestor->getXref()]["number"], $f+1);
             
@@ -121,6 +125,8 @@ class DescendantNumberGenerator
 
             for($i = 0; $i<count($children); $i++)
             { 
+                if(!array_key_exists($ancestor->getXref(), $numbering))
+                        continue;
                 
                 $params = new \DescendantNumberParameters();
                 $params->NthChild = $cumulative_child_idx+$i+1;
