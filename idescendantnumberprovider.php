@@ -123,45 +123,220 @@ class CustomDescendantNumberParameterDescriptor
      * @var string[] The array of possible choices. Only used by Dropdown, SingleChoice, MultiChoice parameters. For integer type, "min" and "max" can be defined.
      */
     var $Choices = array();
+    
+    /**
+     * Optional regex pattern to validate text input.
+     * @var string
+     */
+    var $Pattern = NULL;
 }
 
 /**
- * Interface for descendant number provider.
+ * Base class for descendant number provider.
  */
-interface IDescendantNumberProvider
+abstract class DescendantNumberProviderBase
 {
     
+    /**
+     * Sets and validates a text (string) parameter.
+     * @param CustomDescendantNumberParameterDescriptor $desc The parameter descriptor.
+     * @param mixed $value The new value;
+     */
+    protected function setTextParam($desc, $value)
+    {
+        if(!is_a($desc, "CustomDescendantNumberParameterDescriptor"))
+        {
+            throw new Exception("Bad parameter descriptor procided.");
+        }
+        
+        if(!in_array($desc->Type, [CustomDescendantNumberParameterType::Text, 
+            CustomDescendantNumberParameterType::TextMultiline] )){
+        
+            throw new Exception("$desc->Name is not a text parameter.");
+        }
+        
+        $str_val = string($value);
+        
+        if($desc->Pattern && !preg_match("/$desc->Pattern/g", $str_val))
+        {
+             throw new Exception("Invalid string pattern.");
+        }
+
+        $name = $desc->Name;
+        $this->$name = $str_val;
+    }
+    
+    
+    /**
+     * Sets and validates a "choice" parameter. That is, a parameter where the user should use from a preset of choices.
+     * @param CustomDescendantNumberParameterDescriptor $desc The parameter descriptor.
+     * @param mixed $value The new value;
+     */
+    protected function setChoiceParam($desc, $value)
+    {
+        if(!is_a($desc, "CustomDescendantNumberParameterDescriptor"))
+        {
+            throw new Exception("Bad parameter descriptor procided.");
+        }
+        
+        if(!in_array($desc->Type, [CustomDescendantNumberParameterType::MultiChoice, 
+            CustomDescendantNumberParameterType::SingleChoice,
+            CustomDescendantNumberParameterType::Dropdown] )){
+        
+            throw new Exception("$desc->Name is not a choice parameter.");
+        }
+        
+        if(!in_array($value, array_keys($desc->Choices)))
+        {
+            throw new Exception("Invalid choice: $value.");
+        }
+
+        $name = $desc->Name;
+        $this->$name = $value;
+    }
+    
+    /**
+     * Sets and validates a custom numeric parameter.
+     * @param CustomDescendantNumberParameterDescriptor $desc The parameter descriptor.
+     * @param mixed $value The new value
+     */
+    protected function setNumericParam($desc, $value)
+    {
+        if(!is_a($desc, "CustomDescendantNumberParameterDescriptor"))
+        {
+            throw new Exception("Bad parameter descriptor procided.");
+        }
+        
+        if(!in_array($desc->Type, [CustomDescendantNumberParameterType::Integer, 
+            CustomDescendantNumberParameterType::Real] )){
+        
+            throw new Exception("$desc->Name is not a numeric parameter.");
+        }
+        
+        $valfunc = $desc->Type ===  CustomDescendantNumberParameterType::Integer ? "intval" : "floatval";
+        $val = $valfunc($value);
+        
+        if(isset($desc->Choices["min"]) && $val < $valfunc($desc->Choices["min"])) {
+            throw new Exception("$val is smaller than the required minimum value: ".$valfunc($desc->Choices["min"]));
+        }
+        if(isset($desc->Choices["max"]) && $val > $valfunc($desc->Choices["max"])) {
+            throw new Exception("$val is greater than the allowed maximum value: ".$valfunc($desc->Choices["max"]));
+        }
+ 
+        $name = $desc->Name;
+        $this->$name = $val;
+    }
     /**
      * Sets the value of the specified parameter.
      * @param string $name The name of the parameter.
      * @param mixed $value The value of the parameter.
      */
-    public function setParameter($name, $value);
+    public function setParameter($name, $value)
+    { 
+        if(!$name) 
+        {
+            return;
+        }
+       
+       $my_desc = $this->getCustomParameterDescriptor($name);
+       
+       if(!$my_desc)
+       {
+           throw new Exception("Invalid parameter name: $name.");
+       }
+        
+       switch($my_desc->Type)
+       {
+           case CustomDescendantNumberParameterType::Boolean:
+               $this->$name = filter_var($value, FILTER_VALIDATE_BOOLEAN);
+               break;
+           case CustomDescendantNumberParameterType::Integer:
+           case CustomDescendantNumberParameterType::Real:
+               $this->setNumericParam($my_desc, $value);
+               break;
+           case CustomDescendantNumberParameterType::Dropdown:
+           case CustomDescendantNumberParameterType::SingleChoice:
+           case CustomDescendantNumberParameterType::MultiChoice:
+               $this->setChoiceParam($my_desc, $value);
+               break;
+           case CustomDescendantNumberParameterType::Text:
+           case CustomDescendantNumberParameterType::TextMultiline:
+               $this->setTextParam($my_desc, $value);
+               break;
+           default:
+               throw new Exception("Invalid parameter type.");
+       }
+       
+    }
     
     /**
      * Sets the value multiple parameters.
      * @param array $parameters Associative array of key/value pairs.
      */
-    public function setParameters($parameters);
+    public function setParameters($parameters)
+    {
+        if(!is_array($parameters))
+        {
+            return;
+        }
+        foreach($parameters as $name=>$value)
+        {
+            $this->setParameter($name, $value);
+        }
+    }
     
     /**
      * Gets the value of the custom parameter.
      * @param string $name The name of the parameter.
      * @return mixed The value of the parameter. NULL, if the parameter is not defined.
      */
-    public function getCustomParameter($name);
+    public function getCustomParameter($name)
+    {
+        
+        $my_desc = $this->getCustomParameterDescriptor($name);
+        
+        if(!$my_desc)
+        {
+            throw new Exception("Invalid parameter name: $name.");
+        }
+        
+        if(isset($this->$name)){
+            return $this->$name;
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Gets the descriptor of a single custom parameter.
+     * @param string $name The name of the parameter.
+     * @return CustomDescendantNumberParameterDescriptor The descriptor of the current parameter. NULL, if no such parameter found.
+     */
+    public function getCustomParameterDescriptor($name)
+    {
+       foreach($this->getCustomParameterDescriptors() as $descriptor)
+       {
+           if($descriptor->Name === $name)
+           {
+               return $descriptor;
+           }
+       }
+       
+       return NULL;
+    }
     
     /**
      * Gets the list of custom parameter descriptors.
      * @return CustomDescendantNumberParameterDescriptor[] The array of custom parameter descriptors. Returns and empty array, if no custom parameters are used.
      */
-    public function getCustomParameterDescriptors();
+    public abstract function getCustomParameterDescriptors();
+    
     
     /**
      * Gets the name of this numbering provider.
      * @return string The user-friendly name of the number provider. 
      */
-    public function getName();
+    public abstract function getName();
     
     /**
      * Generates the spouse numbering based on input parameters.
@@ -170,7 +345,7 @@ interface IDescendantNumberProvider
      * @remarks Not all numbering styles include separate numbering for spouses. In these cases, this function should return NULL.
      * @return string The number of the spouse.
      */
-    public function getSpouseNumber($other_spouse_number, $nth_marriage);
+    public abstract function getSpouseNumber($other_spouse_number, $nth_marriage);
     
     /**
      * Generates the descendant numbering based on the input parameters.
@@ -178,5 +353,5 @@ interface IDescendantNumberProvider
      * @return string The number of the descendant.
      * @remarks If $param is NULL, this function should return the number for the "root" ancestor.
      *  */
-    public function getDescendantNumber($params);
+    public abstract function getDescendantNumber($params);
 }

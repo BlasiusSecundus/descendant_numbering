@@ -23,7 +23,7 @@ class DescendantNumberGenerator
     protected $CurrentLevel = 1;
     
     /**
-     * @var IDescendantNumberProvider The descendant number provider.
+     * @var DescendantNumberProviderBase The descendant number provider.
      */
     protected $NumberProvider = null;
     
@@ -49,7 +49,7 @@ class DescendantNumberGenerator
     /**
      * Generates descendant numbering for the specified ancestor.
      * @param Individual $ancestor The ancestor.
-     * @param IDescendantNumberProvider $numbering_class The numbering style.
+     * @param DescendantNumberProviderBase $numbering_class The numbering style.
      * @param Individual[] $numbering The array of numbered individuals. Used internally for recursion. Must be an empty array when initially called with the ancestor.
      * @param integer level The current level of recursion (i. e. the depth of the descendant tree). 1 = the children of the root ancestor, 2 = grandchildren and so on. Used internally.
      * @return string[]
@@ -157,7 +157,7 @@ class DescendantNumberGenerator
     /**
      * Constructor.
      * @param Individual $ancestor
-     * @param IDescendantNumberProvider $number_provider
+     * @param DescendantNumberProviderBase $number_provider
      * @param array $parameters Custom parameters for the number provider.
      */
     public function __construct($ancestor, $number_provider,$parameters) {
@@ -167,7 +167,7 @@ class DescendantNumberGenerator
     
     /**
      * Sets the descendant number provider.
-     * @param IDescendantNumberProvider $number_provider
+     * @param DescendantNumberProviderBase $number_provider
      * @param array $parameters Custom parameters for the number provider.
      */
     public function setNumberProvider($number_provider,$parameters)
@@ -185,7 +185,7 @@ class DescendantNumberGenerator
     }
     /**
      * Gets the current number provider.
-     * @return IDescendantNumberProvider
+     * @return DescendantNumberProviderBase
      */
     public function getNumberProvider()
     {
@@ -206,7 +206,21 @@ class DescendantNumberGenerator
         
         else  { 
             global $WT_TREE;
+            if(!preg_match("/I[0-9]+/", $ancestor))
+            {
+                throw new Exception("Invalid ancestor XREF: $ancestor");
+            }
             $this->Ancestor = Individual::getInstance ($ancestor, $WT_TREE);
+            
+            if(!$this->Ancestor)
+            {
+                throw new Exception("Could not load ancestor: $ancestor.");
+            }
+            
+            if(!$this->Ancestor->canShow())
+            {
+                throw new Exception("The current user cannot access this individual.");
+            }
         }
         
         $this->CurrentLevel = 1;

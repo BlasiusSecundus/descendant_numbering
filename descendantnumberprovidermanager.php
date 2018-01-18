@@ -9,7 +9,7 @@ require_once 'idescendantnumberprovider.php';
 class DescendantNumberProviderManager
 {
     /**
-     * @var IDescendantNumberProvider[] Loaded descendant number provider classes.
+     * @var DescendantNumberProviderBase[] Loaded descendant number provider classes.
      */
     protected static $DescendantNumberingClasses = [];
     
@@ -80,7 +80,7 @@ class DescendantNumberProviderManager
     
     /**
      * Gets the installed descendant numbering classes.
-     * @return IDescendantNumberProvider[]
+     * @return DescendantNumberProviderBase[]
      */
     public static function getDescendantNumberingClasses()
     {
@@ -109,7 +109,7 @@ class DescendantNumberProviderManager
             
             foreach($classes as $class) {
                 $class_metadata = new \ReflectionClass($class);
-                if(!$class_metadata->implementsInterface("IDescendantNumberProvider")) 
+                if(!$class_metadata->isSubclassOf("DescendantNumberProviderBase")) 
                     {continue;}
                     
                 self::$DescendantNumberingClasses[] = $class_metadata->newInstance(null);
@@ -126,11 +126,11 @@ class DescendantNumberProviderManager
         
         foreach($providers as $provider)
         {
-            if(get_class($provider) == $class_name) {
+            if(get_class($provider) === $class_name) {
                 return $provider;
             }
         }
         
-        return null;
+        throw new Exception("Invalid provider class: $class_name.");
     }
 }

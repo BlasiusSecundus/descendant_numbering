@@ -30,7 +30,7 @@ final class dAbovilleParameters
 /**
  * Implements descendant numbering based on the d'Aboville system.
  */
-class dAboville implements IDescendantNumberProvider
+class dAboville extends DescendantNumberProviderBase
 {
     
     /**
@@ -38,47 +38,6 @@ class dAboville implements IDescendantNumberProvider
      */
     public function __construct() {
         
-    }
-    
-    /**
-     * {@inheritDoc}
-     */
-    public function setParameter($name, $value)
-    {
-        
-        if(!$name) 
-        {
-            return;
-        }
-        
-        $this->$name = $value;
-    }
-    
-    /**
-     * {@inheritDoc}
-     */
-    public function setParameters($parameters)
-    {
-        if(!$parameters)
-        {
-            return;
-        }
-        foreach($parameters as $name=>$value)
-        {
-            $this->setParameter($name, $value);
-        }
-    }
-    
-    /**
-     * {@inheritDoc}
-     */
-    public function getCustomParameter($name)
-    {
-        if(isset($this->$name)){
-            return $this->$name;
-        }
-        
-        return null;
     }
     
     /**
@@ -111,7 +70,7 @@ class dAboville implements IDescendantNumberProvider
                     I18N::translate("Place a period after each Nth number:"),
                     CustomDescendantNumberParameterType::Integer,
                     I18N::translate("Sets how frequenly a separator period is placed. It is advisable to set \"Child numbering after 9\" to \"Capital letters\", if this value is greater than 2 and there are persons with more than 9 children."),
-                    ["min"=>1]
+                    ["min"=>1, "default"=>1]
                     ) 
         ];
     }

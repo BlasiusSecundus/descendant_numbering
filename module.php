@@ -94,6 +94,8 @@ class DescendantNumberingModule extends AbstractModule implements ModuleTabInter
                     $retval.=" min='".intval($parameter_descriptor->Choices["min"])."' ";
                 if(isset($parameter_descriptor->Choices["max"]))
                     $retval.=" max='".intval($parameter_descriptor->Choices["max"])."' ";
+                if(isset($parameter_descriptor->Choices["default"]))
+                    $retval.=" value='".intval($parameter_descriptor->Choices["default"])."' ";
                 $retval.="/>";
                 $retval.="</td>";
                 break;
