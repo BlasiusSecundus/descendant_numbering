@@ -156,7 +156,8 @@ class DescendantNumberingModule extends AbstractModule implements ModuleTabInter
         $retval = "<table class=\"facts_table\" id='common-numbering-parameters'>"
                 . "<tr><td class=\"descriptionbox\" colspan='2'>"
                 . "Select a numbering style:"
-                . "<input type='hidden' id='numbering-ancestor' name='ancestor' value='{$ancestor->getXref()}'>" 
+                . "<input type='hidden' id='numbering-ancestor' name='ancestor' value='{$ancestor->getXref()}'>"
+                . Filter::getCsrf()
                 . "<select id='numbering-styles' name='style'>";
                 
         foreach($numbering_classes as $numclass)

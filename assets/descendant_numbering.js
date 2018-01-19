@@ -98,8 +98,20 @@ function OnDownloadClick(event)
     
     post_data["download"] = true;
     post_data["dl-format"] = jQuery(event.target).data("dl-format");
-    
-    window.location = "modules_v3/descendant_numbering/getdescendantnumbering.php?"+jQuery.param(post_data);
+    var form = jQuery("<form action='modules_v3/descendant_numbering/getdescendantnumbering.php' method='post' style='display: none;'></form>");
+    for(var name in post_data)
+    {
+        var value = post_data[name];
+        var input = jQuery("<input type='hidden'>");
+        input.attr("name", name).attr("value", name === 'parameters' ? JSON.stringify(value) : value);
+        
+        input.appendTo(form);
+        
+    }
+    form.appendTo("body");
+    form.submit();
+    form.remove();
+    //window.location = "modules_v3/descendant_numbering/getdescendantnumbering.php?"+jQuery.param(post_data);
     
 }
 

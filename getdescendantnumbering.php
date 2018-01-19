@@ -62,11 +62,21 @@ $numberingstyle = get_post("style");
 
 $params = get_post("parameters");
 
+if(is_string($params))
+{
+    $params = json_decode($params, JSON_OBJECT_AS_ARRAY);
+}
+
 $member = Auth::isMember($WT_TREE);
 
 
 try{
 
+if(!Filter::checkCsrf()){
+    http_response_code(406);
+    return;
+} 
+    
 if(!$member)    {
     throw new Exception(I18N::translate("The current user is not authorized to access this feature."));
 }

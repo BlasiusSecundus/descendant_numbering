@@ -206,7 +206,7 @@ class DescendantNumberGenerator
         
         else  { 
             global $WT_TREE;
-            if(!preg_match("/I[0-9]+/", $ancestor))
+            if(!preg_match("/^I[0-9]+$/", $ancestor))
             {
                 throw new Exception("Invalid ancestor XREF: $ancestor");
             }
