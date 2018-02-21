@@ -16,46 +16,11 @@ require_once 'descendantnumbergenerator.php';
 class DescendantNumberingModule extends AbstractModule implements ModuleTabInterface
 {
     
-    /** @var string prefix for descendant numbering fact names */
-    var $FactNamePrefix = "BS_DESC_NO_";
-    
-    /** @var string prefix for individuals that serve as root (ancestor) of a descendant numbering line */
-    var $FactRootNamePrefix = "BS_DESC_NO_ROOT";
-    
     /** @var string[] registered descendant numbering classes. If null, call getDescendantNumberingClasses to retrieve them.*/
     var $DescendantNumberingClasses = null;
     
     /** @var string location of the branch export module files */
     var $directory;
-    
-    /**
-     * Gets the already recorded numbering facts for the currently selected individual.
-     * @global type $controller The controller
-     * @return array The list of fact names.
-     */
-    protected function getNumberingFactNames()
-    {   
-       
-       global $controller;
-       
-       $ancestor = $controller->getSignificantIndividual();
-       
-       if(!$ancestor)   { return array(); }
-       
-       $facts = $ancestor->getFacts();
-       
-       $desc_num_fact_names = [];
-       
-       foreach($facts as $fact)
-       {
-           if(strpos($fact->getTag(), $this->FactRootNamePrefix) === 0)
-           {
-               $desc_num_fact_names[] = $fact->getValue();
-           }
-       }
-       
-       return  $desc_num_fact_names;
-    }
     
     /**
      * Prints the parameter controls for the specified parameter.
@@ -150,7 +115,6 @@ class DescendantNumberingModule extends AbstractModule implements ModuleTabInter
          
          $ancestor = $controller->getSignificantIndividual();
         
-        $fact_names = $this->getNumberingFactNames();
         $numbering_classes = \DescendantNumberProviderManager::getDescendantNumberingClasses();
         
         $retval = "<table class=\"facts_table\" id='common-numbering-parameters'>"
