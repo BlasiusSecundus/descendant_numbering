@@ -31,12 +31,13 @@ public function getCustomParameterDescriptors(){
 public function getDescendantNumber($params) {
     
     if(!$params){
-        return "1";
+        return "1.";
     }
     
     $use_modified = $this->getCustomParameter(HenrySystemParameters::HenrySystemVersion) === "Modified";
     
-    $retval = $params->ParentNumber;
+    $retval = str_replace(".", "", $params->ParentNumber);
+    
     if($params->NthChild <= 9)
     {
         $retval.=$params->NthChild;
@@ -49,6 +50,7 @@ public function getDescendantNumber($params) {
         $retval.= $use_modified ? "($params->NthChild)" : chr(ord('A') + $params->NthChild - 11);
     }
     
+    $retval.=".";
     return $retval;
 }
 
