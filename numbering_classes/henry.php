@@ -1,5 +1,17 @@
 <?php
+use Fisharebest\Webtrees\I18N;
 
+/**
+ * Enumeration of d'Aboville custom parameter names.
+ */
+final class HenrySystemParameters
+{
+    /**
+     * What version of the henry system (original or modified) is to be used.
+     */
+    const HenrySystemVersion="HenrySystemVersion";
+
+}
 class Henry extends DescendantNumberProviderBase
 {
     public function __construct() {
@@ -7,7 +19,13 @@ class Henry extends DescendantNumberProviderBase
     }
     
 public function getCustomParameterDescriptors(){
-    return array();
+    return [ new CustomDescendantNumberParameterDescriptor(
+                    HenrySystemParameters::HenrySystemVersion,
+                    I18N::translate("Henry System version"),
+                    CustomDescendantNumberParameterType::SingleChoice,
+                    I18N::translate("Select which version (original or modified) would you like to use."),
+                    ["Original"=>I18N::translate("Original"),"Modified"=>I18N::translate("Modified")]
+                    )];
 } 
 
 public function getDescendantNumber($params) {
@@ -16,6 +34,8 @@ public function getDescendantNumber($params) {
         return "1";
     }
     
+    $use_modified = $this->getCustomParameter(HenrySystemParameters::HenrySystemVersion) === "Modified";
+    
     $retval = $params->ParentNumber;
     if($params->NthChild <= 9)
     {
@@ -23,10 +43,10 @@ public function getDescendantNumber($params) {
     }
     else if($params->NthChild === 10)
     {
-        $retval.="X";
+        $retval.= $use_modified ? "($params->NthChild)" : "X";
     }
     else {
-        $retval.=chr(ord('A') + $params->NthChild - 11);
+        $retval.= $use_modified ? "($params->NthChild)" : chr(ord('A') + $params->NthChild - 11);
     }
     
     return $retval;
