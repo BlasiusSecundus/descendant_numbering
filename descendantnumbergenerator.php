@@ -113,6 +113,7 @@ class DescendantNumberGenerator
         }
         
         //descendant numbering
+        $children_to_process = array();
         for($f = 0; $f<count($spouse_families); $f++) {
             
             
@@ -121,7 +122,7 @@ class DescendantNumberGenerator
             
             usort($children,array("Fisharebest\Webtrees\Individual","compareBirthDate"));
 
-            
+            $children_to_process = array_merge($children_to_process, $children);
 
             for($i = 0; $i<count($children); $i++)
             { 
@@ -144,11 +145,14 @@ class DescendantNumberGenerator
                     self::storeNumber($numbering, $children[$i], $numbering_class->getDescendantNumber($params));
                 }
                 
-                self::getDescendantNumberingFor($children[$i], $numbering_class,$numbering,$level+1);
             }
             
             $cumulative_child_idx+=count($children);
         
+        }
+        
+        foreach($children_to_process as $child){
+            self::getDescendantNumberingFor($child, $numbering_class,$numbering,$level+1);
         }
           
         return $numbering;
